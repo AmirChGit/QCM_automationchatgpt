@@ -1,3 +1,4 @@
+# "C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="C:\path\to\your\chrome\profile"
 import os
 import time
 import json
@@ -24,7 +25,9 @@ subjects = df.iloc[:, 0].dropna().tolist()
 def read_last_processed_subject():
     if os.path.exists(last_processed_subject_file):
         with open(last_processed_subject_file, 'r') as file:
-            return file.read().strip()
+            content = file.read().strip()
+            if content:
+                return content
     return None
 
 # Function to save the last processed subject
@@ -87,13 +90,13 @@ def wait_for_response(unique_id):
         try:
             print("Checking for new div elements...")
             new_div_elements = driver.find_elements(By.CSS_SELECTOR, 'div.markdown.prose.w-full.break-words.dark\\:prose-invert.dark')
-            #print(f"Found {len(new_div_elements)} div elements.")
+            print(f"Found {len(new_div_elements)} div elements.")
             total_id_count = 0
             for div_element in new_div_elements:
                 p_element = div_element.find_element(By.TAG_NAME, 'p')
                 count_id = p_element.text.count(unique_id)
                 total_id_count += count_id
-                #print(f"Found {count_id} occurrences of ID {unique_id} in a p element.")
+                print(f"Found {count_id} occurrences of ID {unique_id} in a p element.")
             print(f"Total occurrences of ID {unique_id} across all p elements: {total_id_count}")
             if total_id_count == 2:
                 print(f"Detected unique ID {unique_id} twice in the response.")
@@ -145,15 +148,14 @@ def main():
     last_processed_subject = read_last_processed_subject()
     start_index = 0
 
-    if last_processed_subject:
-        try:
-            start_index = subjects.index(last_processed_subject) + 1
-        except ValueError:
-            start_index = 0
+    if last_processed_subject and last_processed_subject in subjects:
+        start_index = subjects.index(last_processed_subject) + 1
+    else:
+        last_processed_subject = subjects[0]
 
     input("Press Enter after logging in manually and being redirected to the chat...")
 
-    for subject in subjects[start_index:]:
+    for index, subject in enumerate(subjects[start_index:], start=start_index):
         unique_id = generate_unique_id()
         try:
             send_message_and_wait(subject, unique_id)
