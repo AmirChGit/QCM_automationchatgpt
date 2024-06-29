@@ -201,7 +201,7 @@ def copy_response(unique_id, part_id):
     response_text = response_element.text
     response_text = response_text.replace(f"{unique_id}.{part_id}", '').strip()  # Remove the unique ID and part ID
     pyperclip.copy(response_text)
-    print(f"Response copied: {response_text[:100]}...")  # Print first 100 characters for verification
+    print(f"Response copied:     {response_text[:100]}...")  # Print first 100 characters for verification
 
 # Function to clean and normalize the subject for file naming
 def clean_subject(subject):
@@ -248,20 +248,23 @@ def main():
 
     for index, subject in enumerate(subjects[start_index:], start=start_index):
         unique_id = generate_unique_id()
-        for part_id in range(1, 15):  # Divide into 14 parts
+        part_id = 1
+        while part_id <= 14:  # Loop to ensure all 14 parts are processed
             start_time = time.time()
             try:
                 send_message_and_wait(subject, f"{unique_id}.{part_id}")
                 wait_for_response(unique_id, part_id, start_time)
                 copy_response(unique_id, part_id)
                 save_response(subject, part_id, append=(part_id > 1))
-                if part_id == 14:
+                part_id += 1
+                if part_id > 14:
                     save_last_processed_subject(subject)
             except Exception as e:
                 print(f"Error occurred: {e}")
                 driver.refresh()
+                # Continue from the current part ID
                 redirect_to_chat_and_type_next(subject, unique_id)
-                break
 
 if __name__ == "__main__":
     main()
+
