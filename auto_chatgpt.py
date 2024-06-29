@@ -1,3 +1,4 @@
+#"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="C:\path\to\your\chrome\profile"
 import os
 import time
 import json
@@ -29,7 +30,7 @@ selectors = {
     "second_button": '.btn.relative.btn-primary',
     "second_button_child": '.flex.items-center.justify-center',
     "continue_button": '.btn.relative.btn-secondary.whitespace-nowrap.border-0.md\\:border',
-    "continue_button_child": 'div.flex.items-center.justify-center'
+    "regenerate_button": '.btn.relative.btn-primary.m-auto'
 }
 
 # Function to read the last processed subject
@@ -59,9 +60,20 @@ driver = webdriver.Chrome(options=chrome_options)
 def normalize_text(text):
     return ''.join(text.split())
 
-# Function to perform the additional actions before sending the next prompt
-def perform_additional_actions():
-    print("Performing additional actions before sending the next prompt...")
+# Function to scroll to the top of the page
+def scroll_to_top():
+    driver.execute_script("window.scrollTo(0, 0);")
+    time.sleep(2)  # Wait for 2 seconds to ensure the page has scrolled
+
+# Function to scroll to the bottom of the page
+def scroll_to_bottom():
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(2)  # Wait for 2 seconds to ensure the page has scrolled
+
+# Function to reset the chat history
+def reset_chat_history():
+    print("Resetting chat history...")
+    scroll_to_top()
     try:
         # Click the first button with the specified class
         first_button = WebDriverWait(driver, 10).until(
@@ -80,16 +92,31 @@ def perform_additional_actions():
                 break
         time.sleep(5)
     except Exception as e:
-        print(f"Error performing additional actions: {e}")
+        print(f"Error resetting chat history: {e}")
 
 # Function to click the "Continue generating" button if found
 def click_continue_generating():
+    scroll_to_bottom()
     try:
         continue_button = driver.find_element(By.CSS_SELECTOR, selectors["continue_button"])
         continue_button.click()
         print("Clicked 'Continue generating' button.")
+        return True
     except Exception as e:
         print("No 'Continue generating' button found.")
+        return False
+
+# Function to click the "Regenerate" button if found
+def click_regenerate_button():
+    scroll_to_bottom()
+    try:
+        regenerate_button = driver.find_element(By.CSS_SELECTOR, selectors["regenerate_button"])
+        regenerate_button.click()
+        print("Clicked 'Regenerate' button.")
+        return True
+    except Exception as e:
+        print("No 'Regenerate' button found.")
+        return False
 
 # Function to redirect to the specific chat link and type the first 'Next' message
 def redirect_to_chat_and_type_next(subject, unique_id):
@@ -111,7 +138,6 @@ def redirect_to_chat_and_type_next(subject, unique_id):
 
 # Function to send a message and wait for the response
 def send_message_and_wait(subject, unique_id):
-    perform_additional_actions()
     print(f"Sending message: {subject} with ID {unique_id}")
     textarea = WebDriverWait(driver, 600).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, selectors["textarea"]))
@@ -127,8 +153,8 @@ def send_message_and_wait(subject, unique_id):
     print(f"Message '{subject} {unique_id}' sent.")
 
 # Function to wait for the response to be completely generated
-def wait_for_response(unique_id, start_time):
-    print(f"Waiting for response to be completely generated with ID {unique_id}...")
+def wait_for_response(unique_id, part_id, start_time):
+    print(f"Waiting for response to be completely generated with ID {unique_id}.{part_id}...")
 
     while True:
         try:
@@ -139,33 +165,41 @@ def wait_for_response(unique_id, start_time):
                 return
 
             print("Checking for new div elements...")
+            driver.execute_script("window.scrollTo(0, 0);")
             new_div_elements = driver.find_elements(By.CSS_SELECTOR, selectors["response_div"])
             print(f"Found {len(new_div_elements)} div elements.")
             total_id_count = 0
             for div_element in new_div_elements:
                 # Debug: Print the text content of the div element
                 print("Div text content: ", div_element.text)
-                count_id = div_element.text.count(unique_id)
+                count_id = div_element.text.count(f"{unique_id}.{part_id}")
                 total_id_count += count_id
-                print(f"Found {count_id} occurrences of ID {unique_id} in a div element.")
-            print(f"Total occurrences of ID {unique_id} across all div elements: {total_id_count}")
+                print(f"Found {count_id} occurrences of ID {unique_id}.{part_id} in a div element.")
+            print(f"Total occurrences of ID {unique_id}.{part_id} across all div elements: {total_id_count}")
             if total_id_count >= 1:
-                print(f"Detected unique ID {unique_id} in the response.")
+                print(f"Detected unique ID {unique_id}.{part_id} in the response.")
                 time.sleep(8)  # Wait for 8 seconds to ensure the response is fully generated
                 return
-            click_continue_generating()  # Check for "Continue generating" button and click it if found
+            
+            # Check for "Continue generating" or "Regenerate" buttons and click if found
+            if not click_continue_generating():
+                if click_regenerate_button():
+                    print("Regenerate button clicked. Refreshing page.")
+                    driver.refresh()
+                    return
+
             time.sleep(10)
         except Exception as e:
             print(f"Error while checking for new elements: {e}")
             time.sleep(1)
 
 # Function to copy the response
-def copy_response(unique_id):
-    print(f"Copying the response for ID {unique_id}...")
+def copy_response(unique_id, part_id):
+    print(f"Copying the response for ID {unique_id}.{part_id}...")
     # Locate the latest 'div' element and copy its content
     response_element = driver.find_elements(By.CSS_SELECTOR, selectors["response_div"])[-1]
     response_text = response_element.text
-    response_text = response_text.replace(unique_id, '').strip()  # Remove the unique ID from the response
+    response_text = response_text.replace(f"{unique_id}.{part_id}", '').strip()  # Remove the unique ID and part ID
     pyperclip.copy(response_text)
     print(f"Response copied: {response_text[:100]}...")  # Print first 100 characters for verification
 
@@ -174,8 +208,8 @@ def clean_subject(subject):
     return subject.split(':')[0].strip().replace('"', '').replace("'", '').replace(',', '')
 
 # Function to save the response to a file
-def save_response(subject):
-    print(f"Saving the response for subject {subject}...")
+def save_response(subject, part_id, append=False):
+    print(f"Saving the response for subject {subject}, part {part_id}...")
     response_text = pyperclip.paste()
     print(f"Copied response: {response_text[:100]}...")  # Print first 100 characters for verification
 
@@ -183,17 +217,22 @@ def save_response(subject):
     clean_subject_name = clean_subject(subject)
     
     # Define the file paths
-    txt_file_path = os.path.join(json_output_path, f"{clean_subject_name}.txt")
     json_file_path = os.path.join(json_output_path, f"{clean_subject_name}.json")
 
-    # Save the response as a text file
-    with open(txt_file_path, 'w') as file:
-        file.write(response_text)
-    print(f"Response saved as {txt_file_path}")
+    # Load existing data if appending
+    if append and os.path.exists(json_file_path):
+        with open(json_file_path, 'r') as file:
+            data = json.load(file)
+    else:
+        data = []
 
-    # Rename the text file to a JSON file
-    os.rename(txt_file_path, json_file_path)
-    print(f"File renamed to {json_file_path}")
+    # Append the new part
+    data.extend(json.loads(response_text))
+
+    # Save the response as a JSON file
+    with open(json_file_path, 'w') as file:
+        json.dump(data, file, indent=4)
+    print(f"Response saved as {json_file_path}")
 
 # Main loop to perform actions and handle errors
 def main():
@@ -209,19 +248,20 @@ def main():
 
     for index, subject in enumerate(subjects[start_index:], start=start_index):
         unique_id = generate_unique_id()
-        start_time = time.time()
-        try:
-            send_message_and_wait(subject, unique_id)
-            wait_for_response(unique_id, start_time)
-            copy_response(unique_id)
-            save_response(subject)
-            save_last_processed_subject(subject)
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            driver.refresh()
-            unique_id = generate_unique_id()
-            redirect_to_chat_and_type_next(subject, unique_id)
+        for part_id in range(1, 15):  # Divide into 14 parts
+            start_time = time.time()
+            try:
+                send_message_and_wait(subject, f"{unique_id}.{part_id}")
+                wait_for_response(unique_id, part_id, start_time)
+                copy_response(unique_id, part_id)
+                save_response(subject, part_id, append=(part_id > 1))
+                if part_id == 14:
+                    save_last_processed_subject(subject)
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                driver.refresh()
+                redirect_to_chat_and_type_next(subject, unique_id)
+                break
 
 if __name__ == "__main__":
     main()
-
