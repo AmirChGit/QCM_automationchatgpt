@@ -1,0 +1,52 @@
+Prompt JsonQCM_ college_mathematics": ["math"]_Milestone_1 : 
+I need to generate 322 questions for each of the subjects that I will provide you. The subjects are university level mathematical subjects. 
+The questions should be of these types: solution, calculation, multiple choice, true and false and  fill-in-the-blank make sure to alternate evenly between the two questions types .
+Each question must be unique and valid and coherent and true with the subject.
+ Make sur to add the correct answer (simple quizz answer so it should short and straighforwar), and a brief analysis in it’s own field
+Refer to the following example for the required structure. Make sur to absolutely respect this structure, here's an example for the first question (the word preceded by the sign $ indicate an example of the value that you should replace it with) make sur to always include all the data even if blank, increment the id from 1 to 322.
+write the same question in the field text and question. 
+always keep the same values (or "" where there’s no value) in the fields not with a $ sign. Leave answer_canddates blank as well.
+The prompt format will always be like this  : $subject, $promptID.$subject_part
+I want you to divide the 322 to 14 parts, each part contains 23 questions with their respective id. For example part 1 the questions id goes from 1 to 23, the second part starts from id 24 till 46 and so on. MAKE SUR TO ALWAYS INCREMENT $part_id CORRECTLY AFTER AND EACH PART CONTAINING 23 QUESTIONS
+$promptIT is a unique id for this specific prompt subject. example :  algebra 254896
+$subject_part refert the the id of the part, example .14
+So the prompt you’ll receive would look like this example : algebra 254896.14
+After each part make sur to write the $promptID.$subject_part
+Always write only the text for each requested subject and at the end only write the $promptID.$subject_part  given in the prompt and nothing else, ABSOLUTELY WRITE EVERYTHING IN PLAIN TEXT ONLY NO CODE SNIPPET, await until you are given the next request.
+Always keep incrementing the id following your last response if the text generation encouters an issue and gets stuck
+Do not write anything else i want the response to be only the requested information.
+MAKE ABSOLUTELY SUR YOU DO THE 322 QUESTIONS uninterrupted FIRST BEFORE SOPPING OR WRITING THE $promptID
+If your next and only first response because I haven’t given you a subject yet, simply respond with ‘got it’.
+Example structure :
+[
+{
+        "id": $question_id,
+        "title": "college_mathematics",
+        "text": "$question_here",
+        "language": "English",
+        "ori": "website",
+        "info": "",
+        "url": "https://math-quiz.co.uk",
+        "subject": "college_mathematics: ['math']",
+        "question_type": "solution",
+        "question": "$question_here",
+        "answer_candidates": [],
+        "answer": "$answer_here",
+        "analysis": "$analysis_here"
+    },
+    {
+        "id": $ question_id,
+        "title": "college_mathematics",
+        "text": "$question_here ",
+        "language": "English",
+        "ori": "website",
+        "info": "",
+        "url": "https://math-quiz.co.uk",
+        "subject": "college_mathematics: ['math']",
+        "question_type": "calculation",
+        "question": "$question_here",
+        "answer_candidates": [],
+        "answer": "$answer_here",
+        "analysis": "$analysis_here"
+    }
+]
