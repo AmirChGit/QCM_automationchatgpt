@@ -137,12 +137,12 @@ def redirect_to_chat_and_type_next(subject, unique_id):
     print(f"'{subject} {unique_id}' message sent.")
 
 # Function to send a message and wait for the response
-def send_message_and_wait(subject, unique_id):
-    print(f"Sending message: {subject} with ID {unique_id}")
+def send_message_and_wait(subject, unique_id, part_id):
+    print(f"Sending message: {subject} with ID {unique_id}.{part_id}")
     textarea = WebDriverWait(driver, 600).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, selectors["textarea"]))
     )
-    textarea.send_keys(f"{subject} {unique_id}")
+    textarea.send_keys(f"{subject} {unique_id}.{part_id}")
     time.sleep(3)  # Add delay before clicking send button
 
     # Locate and click the send button
@@ -150,7 +150,7 @@ def send_message_and_wait(subject, unique_id):
         EC.presence_of_element_located((By.CSS_SELECTOR, selectors["send_button"]))
     )
     send_button.click()
-    print(f"Message '{subject} {unique_id}' sent.")
+    print(f"Message '{subject} {unique_id}.{part_id}' sent.")
 
 # Function to wait for the response to be completely generated
 def wait_for_response(unique_id, part_id, start_time):
@@ -201,7 +201,7 @@ def copy_response(unique_id, part_id):
     response_text = response_element.text
     response_text = response_text.replace(f"{unique_id}.{part_id}", '').strip()  # Remove the unique ID and part ID
     pyperclip.copy(response_text)
-    print(f"Response copied:     {response_text[:100]}...")  # Print first 100 characters for verification
+    print(f"Response copied: {response_text[:100]}...")  # Print first 100 characters for verification
 
 # Function to clean and normalize the subject for file naming
 def clean_subject(subject):
@@ -248,22 +248,20 @@ def main():
 
     for index, subject in enumerate(subjects[start_index:], start=start_index):
         unique_id = generate_unique_id()
-        part_id = 1
-        while part_id <= 14:  # Loop to ensure all 14 parts are processed
+        for part_id in range(1, 15):  # Divide into 14 parts
             start_time = time.time()
             try:
-                send_message_and_wait(subject, f"{unique_id}.{part_id}")
+                send_message_and_wait(subject, unique_id, part_id)
                 wait_for_response(unique_id, part_id, start_time)
                 copy_response(unique_id, part_id)
                 save_response(subject, part_id, append=(part_id > 1))
-                part_id += 1
-                if part_id > 14:
+                if part_id == 14:
                     save_last_processed_subject(subject)
             except Exception as e:
                 print(f"Error occurred: {e}")
                 driver.refresh()
-                # Continue from the current part ID
-                redirect_to_chat_and_type_next(subject, unique_id)
+                # Continue from the current part ID without resetting
+                break
 
 if __name__ == "__main__":
     main()
