@@ -7,12 +7,13 @@ Refer to the following example for the required structure. Make sur to absolutel
 write the same question in the field text and question. 
 always keep the same values (or "" where there’s no value) in the fields not with a $ sign. Leave answer_canddates blank as well.
 The prompt format will always be like this  : $subject, $promptID.$subject_part
-I want you to divide the 322 to 14 parts, each part contains 23 questions with their respective id. For example part 1 the questions id goes from 1 to 23, the second part starts from id 24 till 46 and so on. MAKE SUR TO ALWAYS INCREMENT $part_id CORRECTLY AFTER AND EACH PART CONTAINING 23 QUESTIONS
+I want you to divide the 300 to 10 parts, each part contains 30 questions with their respective id. For example part 1 the questions id goes from 1 to 30, the second part starts from id 31 till 41 and so on. MAKE SUR TO ALWAYS INCREMENT $part_id CORRECTLY AFTER AND EACH PART CONTAINING 23 QUESTIONS
 $promptIT is a unique id for this specific prompt subject. example :  algebra 254896
-$subject_part refert the the id of the part, example .14
-So the prompt you’ll receive would look like this example : algebra 254896.14
+$subject_part refert the the id of the part, example .11
+So the prompt you’ll receive would look like this example : algebra 254896.11
 After each part make sur to write the $promptID.$subject_part
 Always write only the text for each requested subject and at the end only write the $promptID.$subject_part  given in the prompt and nothing else, ABSOLUTELY WRITE EVERYTHING IN PLAIN TEXT ONLY NO CODE SNIPPET, await until you are given the next request.
+Remember to always match id with the $part_id given, like if it’s 1, then the id of the 30 questions should be from 1 to 30, if $part_id is 2, then the id should be from 31 to 41 and so on
 Always keep incrementing the id following your last response if the text generation encouters an issue and gets stuck
 Do not write anything else i want the response to be only the requested information.
 MAKE ABSOLUTELY SUR YOU DO THE 322 QUESTIONS uninterrupted FIRST BEFORE SOPPING OR WRITING THE $promptID
