@@ -284,7 +284,7 @@ def main():
         unique_id = generate_unique_id()
         last_prompt = {"subject": subject, "unique_id": unique_id, "part_id": 1}
         
-        for part_id in range(1, 15):  # Divide into 14 parts
+        for part_id in range(1, 10):  # Divide into 10 parts
             start_time = time.time()
             last_prompt["part_id"] = part_id
             try:
@@ -294,7 +294,7 @@ def main():
                 copy_response(unique_id, part_id)
                 save_response(subject, part_id, append=(part_id > 1))
                 print(f"Saved part {part_id} of {subject} with ID {unique_id}.{part_id}")
-                if part_id == 14:
+                if part_id == 10:
                     save_last_processed_subject(subject)
                     if (part_id % 3) == 0:
                         driver.refresh()
