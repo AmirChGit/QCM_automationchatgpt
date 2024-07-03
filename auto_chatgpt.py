@@ -16,7 +16,7 @@ from selenium.webdriver.support import expected_conditions as EC
 # Path to the Excel file containing the subjects
 excel_path = "C:/Users/achachoui/Documents/repository/QCM_automationchatgpt/Subjects/Subjects.xlsx"
 last_processed_subject_file = "C:/Users/achachoui/Documents/repository/QCM_automationchatgpt/last_Maths_subject.txt"
-chatgpt_chat_link = "https://chatgpt.com/c/28cb7862-3ed1-4c81-a0e0-4c7764d88808"
+chatgpt_chat_link = "https://chatgpt.com/c/1e575106-d50d-45fe-a22b-6c6f288da2f2"
 json_output_path = "C:/Users/achachoui/Documents/repository/QCM_automationchatgpt/Milestone1_Part2"
 
 # Read subjects from the first column of the Excel file
@@ -87,30 +87,30 @@ def reset_chat_history_with_pyautogui():
     driver.refresh()
     time.sleep(5)  # Wait for the page to reload
     
-    # Perform the first moveTo and click action
-    # print(pyautogui.position())
-    pyautogui.moveTo(1910, 106)
-    pyautogui.mouseDown(button='left')
-    time.sleep(18)
-    pyautogui.mouseUp(button='left')
+    # # Perform the first moveTo and click action
+    # # print(pyautogui.position())
+    # pyautogui.moveTo(1910, 106)
+    # pyautogui.mouseDown(button='left')
+    # time.sleep(18)
+    # pyautogui.mouseUp(button='left')
 
-    pyautogui.moveTo(772, 185)
-    pyautogui.click()
-    pyautogui.moveTo(1910, 935)
+    # pyautogui.moveTo(772, 185)
+    # pyautogui.click()
+    # pyautogui.moveTo(1910, 935)
 
-    for variable in range(31):
-        pyautogui.click()
+    # for variable in range(31):
+    #     pyautogui.click()
 
-    pyautogui.moveTo(199, 111)
-    pyautogui.click()
+    # pyautogui.moveTo(199, 111)
+    # pyautogui.click()
 
-    pyautogui.moveTo(320, 206)
-    pyautogui.click()
+    # pyautogui.moveTo(320, 206)
+    # pyautogui.click()
     
-    pyautogui.moveTo(1289, 744)
-    pyautogui.click()
+    # pyautogui.moveTo(1300, 624)
+    # pyautogui.click()
     
-    time.sleep(20)  # Wait for 20 seconds to ensure actions complete
+    # time.sleep(8)  # Wait for 20 seconds to ensure actions complete
 
 # Function to click the "Continue generating" button if found
 def click_continue_generating():
@@ -284,7 +284,7 @@ def main():
         unique_id = generate_unique_id()
         last_prompt = {"subject": subject, "unique_id": unique_id, "part_id": 1}
         
-        for part_id in range(1, 10):  # Divide into 10 parts
+        for part_id in range(1, 15):  # Divide into 14 parts
             start_time = time.time()
             last_prompt["part_id"] = part_id
             try:
@@ -294,7 +294,7 @@ def main():
                 copy_response(unique_id, part_id)
                 save_response(subject, part_id, append=(part_id > 1))
                 print(f"Saved part {part_id} of {subject} with ID {unique_id}.{part_id}")
-                if part_id == 10:
+                if part_id == 14:
                     save_last_processed_subject(subject)
                     if (part_id % 3) == 0:
                         driver.refresh()
